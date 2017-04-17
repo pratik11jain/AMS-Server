@@ -1,19 +1,31 @@
 package mysql;
 
-import javax.persistence.Embeddable;
-import javax.persistence.Entity;
-import javax.persistence.Id;
-import java.io.Serializable;
+import javax.persistence.*;
 
 @Entity // This tells Hibernate to make a table out of this class
+@Table(name = "student_table")
 public class Student_table {
 
     @Id
-    private StudentPK key;
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    private int id;
+    private String IMEI;
+    private String Student_ID;
+    private String Android_ID;
     private String first_name;
     private String last_name;
     private String email;
-    private String course_ID;
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name = "course_ID")
+    private Course_table course;
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
 
     public String getLast_name() {
         return last_name;
@@ -23,12 +35,12 @@ public class Student_table {
         this.last_name = last_name;
     }
 
-    public String getCourse_ID() {
-        return course_ID;
+    public Course_table getCourse() {
+        return course;
     }
 
-    public void setCourse_ID(String course_ID) {
-        this.course_ID = course_ID;
+    public void setCourse(Course_table course) {
+        this.course = course;
     }
 
     public String getFirst_name() {
@@ -46,21 +58,6 @@ public class Student_table {
     public void setEmail(String email) {
         this.email = email;
     }
-
-    public StudentPK getKey() {
-        return key;
-    }
-
-    public void setKey(StudentPK key) {
-        this.key = key;
-    }
-}
-
-@Embeddable
-class StudentPK implements Serializable {
-    private String IMEI;
-    private String Student_ID;
-    private String Android_ID;
 
     public String getIMEI() {
         return IMEI;

@@ -6,6 +6,7 @@
         <fileset id="fileset" name="Spring Application Context" removed="false">
           <file>file://$MODULE_DIR$/../../src/main/java/mysql/Application.java</file>
           <file>file://$MODULE_DIR$/../../src/main/java/hello/Application.java</file>
+          <file>file://$MODULE_DIR$/../../src/main/resources/hibernate.cfg.xml</file>
         </fileset>
       </configuration>
     </facet>
