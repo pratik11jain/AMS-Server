@@ -1,28 +1,32 @@
+drop database ams;
 create database ams;
 create user 'amsuser'@'localhost' identified by 'amsassword';
 grant all on ams.* to 'amssuser'@'localhost';
 use ams;
-create table student_table(
-id INT NOT NULL auto_increment,
-first_name VARCHAR(20),
-last_name VARCHAR(20),
-course_ID VARCHAR(20),
-Student_ID VARCHAR(20),
-email VARCHAR(50),
-Android_ID VARCHAR(20),
-IMEI VARCHAR(20),
-Primary Key(Id),
-foreign key (course_ID) references course_table(course_ID));
+CREATE TABLE `course_table` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `course_name` varchar(20) DEFAULT NULL,
+  `course_ID` varchar(20) DEFAULT NULL,
+  `start_time` time DEFAULT NULL,
+  `end_time` time DEFAULT NULL,
+  `Day` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8;
 
-create table course_table(
-id INT NOT NULL auto_increment,
-course_name VARCHAR(20),
-course_ID VARCHAR(20),
-start_time TIME,
-end_time TIME,
-Day VARCHAR(20),
-Primary Key(Id));
+CREATE TABLE `student_table` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `first_name` varchar(20) DEFAULT NULL,
+  `last_name` varchar(20) DEFAULT NULL,
+  `course_ID` int(11) DEFAULT NULL,
+  `Student_ID` varchar(20) DEFAULT NULL,
+  `email` varchar(50) DEFAULT NULL,
+  `Android_ID` varchar(20) DEFAULT NULL,
+  `IMEI` varchar(20) DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `FK9wg9cix4nfyhs0kuodch58tqu` (`course_ID`),
+  CONSTRAINT `FK9wg9cix4nfyhs0kuodch58tqu` FOREIGN KEY (`course_ID`) REFERENCES `course_table` (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
-ALTER TABLE ams.student_table add foreign key (course_ID) references ams.course_table(course_ID);
 
 http://localhost:8080/access/add?first_name=a&IMEI=a&Android_ID=a&Student_ID=a&last_name=a&email=a&course_ID=a
+

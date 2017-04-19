@@ -12,6 +12,10 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.sql.Time;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 @Controller    // This means that this class is a Controller
@@ -91,16 +95,16 @@ public class MainController {
 
     @GetMapping(path = "/studentCourses")
     public @ResponseBody
-    Course_table[] getStudentCourses(@RequestParam String ID) {
+    Course_table[] getStudentCourses(@RequestParam String IMEI) {
 
         Session session = factory.openSession();
         /*Student_table student_table = (Student_table) session.get(Student_table.class, Student_ID) ;
         session.flush();
         session.close();
         */
-        String hql = "FROM Course_table where ID in (select course.id FROM Student_table where Student_ID = :ID)";
+        String hql = "FROM Course_table where ID in (select course.id FROM Student_table where IMEI = :IMEI)";
         Query query = session.createQuery(hql);
-        query.setParameter("ID", ID);
+        query.setParameter("IMEI", IMEI);
         List l = query.list();
         Course_table[] c = new Course_table[l.size()];
         for(int i=0;i<l.size();i++)
@@ -110,18 +114,79 @@ public class MainController {
 
     @GetMapping(path = "/ping")
     public @ResponseBody
-    int sendPing(@RequestParam String ID) {
-/*
+    boolean sendPing(@RequestParam String student_ID,
+                     @RequestParam String IMEI,
+                     @RequestParam String android_ID,
+                     @RequestParam String course_ID,
+                     @RequestParam String email_id) {
         Session session = factory.openSession();
-        //Student_table student_table = (Student_table) session.get(Student_table.class, Student_ID) ;
-        //session.flush();
-        //session.close();
-
-        String hql = "FROM Course_table where ID in (select course.id FROM Student_table where Student_ID = :ID)";
+        String hql = "FROM Course_table where ID in (select course.id FROM Student_table where IMEI = :IMEI AND" +
+                " Student_ID = :student_ID AND email = :email_id AND Android_ID = :android_ID)";
         Query query = session.createQuery(hql);
-        query.setParameter("ID", ID);
-        return query.list();
-*/
-        return 1;
+        query.setParameter("IMEI", IMEI);
+        query.setParameter("student_ID", student_ID);
+        query.setParameter("email_id", email_id);
+        query.setParameter("android_ID", android_ID);
+        ArrayList<Course_table> l =  (ArrayList) query.list();
+        if (l.size() == 0) {
+            return false;
+        }
+        Course_table course = l.get(0);
+        if(course.getCourse_ID().equals(course_ID)) {
+            //String time = "1369148661";
+            //long timestampLong = Long.parseLong(time)*1000;
+            //Date d = new Date(timestampLong);
+            //Calendar c = Calendar.getInstance();
+            //c.setTime(d);
+            //int hours = c.get(Calendar.HOUR);
+            //int min = c.get(Calendar.MINUTE);
+            //int day = c.get(Calendar.DAY_OF_WEEK);
+            /*if(hours >= course.getStart_time().getHours() && hours <= course.getEnd_time().getHours()){
+                System.out.println(hours);
+            }*/
+            if(isNowBetweenDateTime(course.getStart_time(),course.getEnd_time()))
+            {
+                System.out.println("true");
+            }else{
+                System.out.println("false");
+            }
+        }
+
+
+        return true;
     }
-}
+    boolean isNowBetweenDateTime(final Date s, final Date e)
+    {
+        final Date now = new Date();
+        return now.after(s) && now.before(e);
+    }
+    private static int getDay(String day) {
+        switch (day) {
+            case "Sunday": {
+                return Calendar.SUNDAY;
+            }
+            case "Monday": {
+                return Calendar.MONDAY;
+            }
+            case "Tuesday": {
+                return Calendar.TUESDAY;
+            }
+            case "Wednesday": {
+                return Calendar.WEDNESDAY;
+            }
+            case "Thursday": {
+                return Calendar.THURSDAY;
+            }
+            case "Friday": {
+                return Calendar.FRIDAY;
+            }
+            case "Saturday": {
+                return Calendar.SATURDAY;
+            }
+            default: {
+                return Calendar.MONDAY;
+            }
+        }
+    }
+
+    }
