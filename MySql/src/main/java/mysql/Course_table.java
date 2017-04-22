@@ -11,7 +11,7 @@ import java.sql.Time;
 public class Course_table {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "ID")
     private int id;
     private String course_ID;

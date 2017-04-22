@@ -51,6 +51,7 @@ public class MainController {
                           @RequestParam String course_day) {
         // @ResponseBody means the returned String is the response, not a view name
         // @RequestParam means it is a parameter from the GET or POST request
+        Session session = factory.openSession();
         if (first_name.length() == 0) {
             throw new IllegalArgumentException("The 'first_name' parameter must not be null or empty");
         }
@@ -68,8 +69,26 @@ public class MainController {
         n.setLast_name(last_name);
         n.setEmail(email);
         n.setCourse(c);
+        String hql = "FROM Student_table where IMEI = :IMEI";
+        Query query = session.createQuery(hql);
+        query.setParameter("IMEI", IMEI);
+        List l = query.list();
 
-        studentRepository.save(n);
+        if(l.size()!=0){
+            Student_table student = (Student_table) l.get(0);
+            student.setStudent_ID(Student_ID);
+            student.setEmail(email);
+            student.setFirst_name(first_name);
+            student.setLast_name(last_name);
+            student.setAndroid_ID(Android_ID);
+            student.setCourse(c);
+            session.update(student);
+        }
+        else {session.save(n);}
+        session.flush();
+        session.close();
+        //session.saveOrUpdate(n);
+        //studentRepository.save(n);
         return true;
     }
 
@@ -111,7 +130,25 @@ public class MainController {
             c[i]=(Course_table)l.get(i);
         return c;
     }
+    @GetMapping(path = "/studentDetails")
+    public @ResponseBody
+    Student_table getStudentDetails(@RequestParam String IMEI) {
 
+        Session session = factory.openSession();
+        /*Student_table student_table = (Student_table) session.get(Student_table.class, Student_ID) ;
+        session.flush();
+        session.close();
+        */
+        String hql = "FROM Student_table where IMEI = :IMEI";
+        Query query = session.createQuery(hql);
+        query.setParameter("IMEI", IMEI);
+        List l = query.list();
+        Student_table[] c = new Student_table[l.size()];
+        for(int i=0;i<l.size();i++)
+            c[i]=(Student_table) l.get(i);
+        return c[0];
+    }
+    //ToDo:location
     @GetMapping(path = "/ping")
     public @ResponseBody
     boolean sendPing(@RequestParam String student_ID,
@@ -132,55 +169,72 @@ public class MainController {
             return false;
         }
         Course_table course = l.get(0);
-        if(course.getCourse_ID().equals(course_ID)) {
-            //String time = "1369148661";
-            //long timestampLong = Long.parseLong(time)*1000;
-            //Date d = new Date(timestampLong);
-            //Calendar c = Calendar.getInstance();
-            //c.setTime(d);
-            //int hours = c.get(Calendar.HOUR);
-            //int min = c.get(Calendar.MINUTE);
-            //int day = c.get(Calendar.DAY_OF_WEEK);
-            /*if(hours >= course.getStart_time().getHours() && hours <= course.getEnd_time().getHours()){
-                System.out.println(hours);
-            }*/
-            if(isNowBetweenDateTime(course.getStart_time(),course.getEnd_time()))
-            {
-                System.out.println("true");
-            }else{
-                System.out.println("false");
+        if(course.getCourse_ID().equalsIgnoreCase(course_ID)) {
+            Date sDate = new Date();
+            sDate.setHours(course.getStart_time().getHours());
+            sDate.setMinutes(course.getStart_time().getMinutes());
+            Date eDate = new Date();
+            eDate.setHours(course.getEnd_time().getHours());
+            eDate.setMinutes(course.getEnd_time().getMinutes());
+            if(isNowBetweenDateTime(sDate,eDate,getDay(course.getDay()))) {
+                return true;
             }
         }
-
-
-        return true;
+        return false;
     }
-    boolean isNowBetweenDateTime(final Date s, final Date e)
+
+    @GetMapping(path = "/newPing")
+    public @ResponseBody
+    Course_table sendNewPing(@RequestParam String IMEI) {
+        Session session = factory.openSession();
+        String hql = "FROM Course_table where ID in (select course.id FROM Student_table where IMEI = :IMEI)";
+        Query query = session.createQuery(hql);
+        query.setParameter("IMEI", IMEI);
+        ArrayList<Course_table> l =  (ArrayList) query.list();
+        if (l.size() == 0) {
+            return new Course_table();
+        }
+        Course_table course = l.get(0);
+        //if(course.getCourse_ID().equalsIgnoreCase(course_ID)) {
+            Date sDate = new Date();
+            sDate.setHours(course.getStart_time().getHours());
+            sDate.setMinutes(course.getStart_time().getMinutes());
+            Date eDate = new Date();
+            eDate.setHours(course.getEnd_time().getHours());
+            eDate.setMinutes(course.getEnd_time().getMinutes());
+            if(isNowBetweenDateTime(sDate,eDate,getDay(course.getDay()))) {
+                return (Course_table)l.get(0);
+            }
+        //}
+        return new Course_table();
+    }
+
+    private boolean isNowBetweenDateTime(final Date s, final Date e, final int day)
     {
         final Date now = new Date();
-        return now.after(s) && now.before(e);
+        return now.after(s) && now.before(e) && (day == Calendar.getInstance().get(Calendar.DAY_OF_WEEK));
     }
     private static int getDay(String day) {
-        switch (day) {
-            case "Sunday": {
+        switch (day.toLowerCase()) {
+            case "sunday": {
                 return Calendar.SUNDAY;
             }
-            case "Monday": {
+            case "monday": {
                 return Calendar.MONDAY;
             }
-            case "Tuesday": {
+            case "tuesday": {
                 return Calendar.TUESDAY;
             }
-            case "Wednesday": {
+            case "wednesday": {
                 return Calendar.WEDNESDAY;
             }
-            case "Thursday": {
+            case "thursday": {
                 return Calendar.THURSDAY;
             }
-            case "Friday": {
+            case "friday": {
                 return Calendar.FRIDAY;
             }
-            case "Saturday": {
+            case "saturday": {
                 return Calendar.SATURDAY;
             }
             default: {

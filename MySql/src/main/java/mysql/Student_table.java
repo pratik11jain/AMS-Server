@@ -7,7 +7,7 @@ import javax.persistence.*;
 public class Student_table {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
     private String IMEI;
     private String Student_ID;
